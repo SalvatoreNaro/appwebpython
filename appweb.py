@@ -1,6 +1,13 @@
 import customtkinter
 from tkinter import *
 from tkinter import messagebox
+from tkinter import filedialog
+import csv
+import threading
+import pyperclip
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 from PIL import Image, ImageSequence
 
 window = customtkinter.CTk()
@@ -8,7 +15,7 @@ window.config(bg="black")
 window.title("App")
 window.geometry("800x600")
 window.resizable(False, False)
-
+threading.Thread(target=window).start()
 main_frame = customtkinter.CTkFrame(window, fg_color="black")
 main_frame.pack(fill="both", expand=True)
 
@@ -31,7 +38,45 @@ def on_mousewheel(event):
     canvas.yview_scroll(int(-1*(event.delta/120)), "units")
 
 canvas.bind_all("<MouseWheel>", on_mousewheel)
-
+def download():
+    save = filedialog.asksaveasfilename(defaultextension=".csv",
+                                        title="Save file csv",
+                                        filetypes=[("Csv","*.csv")])
+    with open (save,"w",newline="") as file:
+        linguaggi = {
+            "Python": "matplotlib",
+            "Python": "tkinter",
+            "Python": "customtkinter",
+            "Python": "keras",
+            "Python": "os",
+            "Python": "tensorflow",
+            "Python": "pytorch",
+            "Python": "numpy",
+            "Python": "scipy",
+            "Python": "cmath",
+            "Python": "sys",
+            "Python": "pandas",
+            "Python": "flask",
+            "Python": "turtle",
+            "Python": "pygame",
+            "Python": "manim",
+            "Python": "requests",
+            "Python": "beautifulsoup4",
+            "Python": "selenium",
+            "Python":"PyQt5",
+            "Python": "Threading",
+            "Python":"Re",
+            "Javascipt":"Three",
+            "Javascript":"React",
+            "Javascript":"Gsap",
+            "Javascript":"Vue"
+        }
+        file_name = csv.writer(file)
+        file_name.writerow(["linguaggi","librerie"])
+        for key,value in linguaggi.items():
+            value_str = str(value)
+            file_name.writerow([key,str(value_str)])
+    
 frame1 = customtkinter.CTkFrame(scrollable_frame, width=300, height=200, fg_color="black", corner_radius=10)
 frame1.grid(row=0, column=0, padx=50, pady=50)
 
@@ -47,7 +92,7 @@ button.grid(row=0, column=3, padx=20, pady=5)
 about_btn = customtkinter.CTkButton(frame1, text="About", text_color="White", fg_color="black", command=lambda: open_about_window())
 about_btn.grid(row=0, column=4, padx=5, pady=5)
 
-contact_btn = customtkinter.CTkButton(frame1, text="Contact", text_color="White", fg_color="black",command=lambda:messagebox.showinfo(title="Contact",message="Pagina contatti non è stata ancora creata ma puoo trovare una copia identica infondo al programma"))
+contact_btn = customtkinter.CTkButton(frame1, text="download", text_color="White", fg_color="black",command=download)
 contact_btn.grid(row=0, column=5, padx=5, pady=5)
 
 testo_originale = "Benvenuto su Chat-B"
@@ -199,18 +244,48 @@ def animate_text3():
     label14.configure(text=parola[:indice])
     window.after(100,animate_text3)
 animate_text3()
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 def verifica():
-    nome=input_utente.get()
+    nome = input_utente.get()
     cognome = input_cognome.get()
-    if nome == "" or cognome == "":
-        messagebox.showinfo(title="Errore 404",message="Compilare i campi")
+    messaggio_testo = messaggio.get("1.0", "end").strip()
+
+    if nome == "" or cognome == "" or messaggio_testo == "":
+        messagebox.showinfo(title="Errore 404", message="Compilare tutti i campi")
         return
+
     
-    else:
-        messagebox.showinfo(title="Successo!",message=f"Messaggio inviato a Salvatore Naro, {nome} {cognome}")
-        input_cognome.delete(0,customtkinter.END)
-        input_utente.delete(0,customtkinter.END)
-        messaggio.delete("1.0","end")
+    sender_email = "yourgmail@gmail.com"#your gmail  
+    sender_password = "Your password"#ypur passowrd 
+    recipient_email = "narosalvo8@gmail.com"  
+
+    subject = f"Messaggio da {nome} {cognome}"
+    body = f"Nome: {nome}\nCognome: {cognome}\n\nMessaggio:\n{messaggio_testo}"
+
+  
+    msg = MIMEMultipart()
+    msg["From"] = sender_email
+    msg["To"] = recipient_email
+    msg["Subject"] = subject
+    msg.attach(MIMEText(body, "plain"))
+
+    try:
+        
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipient_email, msg.as_string())
+        server.quit()
+
+        messagebox.showinfo(title="Successo!", message="Messaggio inviato con successo!")
+        input_cognome.delete(0, customtkinter.END)
+        input_utente.delete(0, customtkinter.END)
+        messaggio.delete("1.0", "end")
+    except Exception as e:
+        messagebox.showerror(title="Errore", message=f"Errore durante l'invio: {e}")
 
 label15 = customtkinter.CTkLabel(scrollable_frame,text="Are you looking for a developer?",text_color="white",font=("Arial",22))
 label15.grid(row=24,column=0,sticky="s",padx=5,pady=10)
@@ -484,7 +559,7 @@ lavori = {
     "XaaS Developer",
     "Zero Trust Security Specialist"
 }
-x = customtkinter.StringVar(value="Software-Engineer")
+x = customtkinter.StringVar(value="altro")
 scelta_utente = customtkinter.CTkOptionMenu(frame6,variable=x,values=[str(i)for i in lavori],fg_color="black",bg_color="black",text_color="white")
 scelta_utente.grid(row=26,column=0,padx=2,pady=10,sticky="we")
 
@@ -496,14 +571,63 @@ label16.grid(row=27,column=1,padx=5,pady=10,sticky="we")
 messaggio = customtkinter.CTkTextbox(frame6,state="normal",width = 150,height=150,text_color="white",fg_color="black",bg_color="black")
 messaggio.grid(row=28,padx=5,pady=10,columnspan=2,sticky="we")
 button_invio = customtkinter.CTkButton(frame6,text="Invia",text_color="White",fg_color="black",bg_color="Black",command=verifica)
-button_invio.grid(row=30,column=1,padx=5,pady=10,sticky="s")
+button_invio.grid(row=30,column=0,padx=5,pady=10,sticky="s")
+fine = customtkinter.CTkFrame(scrollable_frame,width=250,height=250,bg_color="black",fg_color="Black")
+fine.grid(row=31,column = 0,padx=50,pady=50,)
+riservatezza  = customtkinter.CTkLabel(master=fine,text="©Salvatore Naro. All rights reserved. Privacy Policy",text_color="White",fg_color="Black",bg_color="Black")
+riservatezza.grid(row=32,column=1,padx=20,pady=5,sticky="we")
 def open_about_window():
     about_window = customtkinter.CTkToplevel(window)
     about_window.title("About")
     about_window.geometry("600x400")
+    about_window.config(bg="Black")
     about_window.resizable(False, False)
-    label33 = customtkinter.CTkLabel(about_window,text="Page about not found",font = ("Arial",50))
-    label33.grid(row=0,column=0,sticky="WE")
+    fonte = "Salvatore Naro"
+    label33 = customtkinter.CTkLabel(about_window,text=fonte,font = ("Arial",32),text_color="White",fg_color="Black",bg_color="Black")
+    label33.pack(pady=10)
+    label43 = customtkinter.CTkLabel(about_window,text="Salvatore Naro è riconosciuto per i suoi progetti tra cui Chat-B e Rocket-B",font=("Arial",16),text_color="White",bg_color="Black",fg_color="Black")
+    label43.pack(pady=5)
+    label53=customtkinter.CTkLabel(about_window,text="Trovami su questi social",bg_color="Black",fg_color="Black",text_color="white",font=("Arial",16))
+    label53.pack(pady=5)
+
+    frame_app = customtkinter.CTkFrame(about_window, fg_color="Black", bg_color="Black")
+    frame_app.pack(pady=10)
+   
+    def linkedin():
+        testo = "Salvatore Naro"
+        pyperclip.copy(testo)
+        messagebox.showinfo(title="Profilo Linkedin",message="il nome dell'account  è stato copiato negli appunti")
+    def github():
+        testo = "Salvatore Naro"
+        pyperclip.copy(testo)
+        messagebox.showinfo(title="Profilo GitHub",message="il nome dell'account  è stato copiato negli appunti")
+    def x():
+        testo = "Salvatore Naro"
+        pyperclip.copy(testo)
+        messagebox.showinfo(title="Profilo X",message="il nome dell'account  è stato copiato negli appunti")
+
+    blue_frame = customtkinter.CTkFrame(frame_app, width=20, height=20, fg_color="Blue", corner_radius=10)
+    blue_frame.grid(row=0, column=0, padx=5, pady=5)
+    blue_button = customtkinter.CTkButton(frame_app, text="In", text_color="White", fg_color="Black", command=linkedin)
+    blue_button.grid(row=0, column=1, padx=5, pady=5)
+
+    pink_frame = customtkinter.CTkFrame(frame_app, width=20, height=20, fg_color="Pink", corner_radius=10)
+    pink_frame.grid(row=0, column=2, padx=5, pady=5)
+    pink_button = customtkinter.CTkButton(frame_app, text="GitHub", text_color="White", fg_color="Black", command=github)
+    pink_button.grid(row=0, column=3, padx=5, pady=5)
+
+    red_frame = customtkinter.CTkFrame(frame_app, width=20, height=20, fg_color="Red", corner_radius=10)
+    red_frame.grid(row=0, column=4, padx=5, pady=5)
+    red_button = customtkinter.CTkButton(frame_app, text="X", text_color="White", fg_color="Black", command=x)
+    red_button.grid(row=0, column=5, padx=5, pady=5)
+    labelringraziemento = customtkinter.CTkLabel(frame_app,text="Thanks!",text_color="White",fg_color="black",bg_color="Black",font=("Arial",32))
+    labelringraziemento.grid(row=1,column=3,padx=10,pady=10)
+    labelsayhello = customtkinter.CTkLabel(frame_app,text="Say hello",text_color="White",fg_color="Black",bg_color="Black",font=("Arial",16))
+    labelsayhello.grid(row=2,pady=10,padx=20,column=4)
+    labelgmail = customtkinter.CTkLabel(frame_app,text="narosalvo8@gmail.com",text_color="White",fg_color="Black",bg_color="Black",font=("Arial",12))
+    labelgmail.grid(row=3,pady=10,padx=20,column=3)
+
+    
     
 
 
