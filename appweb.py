@@ -1,21 +1,78 @@
+#Librerie
 import customtkinter
 from tkinter import *
 from tkinter import messagebox
 from tkinter import filedialog
 import csv
 import threading
+import asyncio
+import logging
 import pyperclip
+from tkinter import Canvas
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from PIL import Image, ImageSequence
+from ping3 import ping, verbose_ping
 
+#Back-end
+
+async def ping_host(host: str, count: int = 4, timeout: int = 2):
+    try:
+        connessione = ping(host, timeout=timeout)
+        if connessione is not None:
+            print(f"Ping : {connessione * 1000:.2f} ms")
+        else:
+            print("Ping perso")
+        verbose_ping(host, count=count)
+        logging.info(f"Ping verso {host} completato con successo")
+    except ValueError as e:
+        logging.error(f"Errore di valore durante il ping: {e}")
+    except Exception as e:
+        logging.error(f"Errore generico durante il ping: {e}")
+    finally:
+        print("Ping completato")
+
+def start_asyncio_loop():
+    asyncio.run(main_async_tasks())
+
+
+async def main_async_tasks():
+    await asyncio.gather(
+        ping_host("google.com"),
+        ping_host("example.com")
+    )
+
+logging.basicConfig(level=logging.INFO)
+
+
+def ping_perso(y):
+    for i in range(1,y+1):
+        for j in range(y-i):
+            print(" ",end=" ")
+        for k in range(2*i-1):
+            print("*",end=" ")
+        print()
+ 
+ping_perso(10)
+#x = 1
+#def num():
+    #global x
+    #while x>0:
+        #y = x+1
+        #x=y
+        #print(y)
+#Non sapevo che fare comunque per chi lo vuole lasciare togliere tutti gli hastag e anche quello del threading.Thread(target=num).start().-.
+
+#Front-end
 window = customtkinter.CTk()
 window.config(bg="black")
+#threading.Thread(target=num).start()
 window.title("App")
+window.after(100, start_asyncio_loop)
 window.geometry("800x600")
 window.resizable(False, False)
-threading.Thread(target=window).start()
+
 main_frame = customtkinter.CTkFrame(window, fg_color="black")
 main_frame.pack(fill="both", expand=True)
 
@@ -29,10 +86,10 @@ canvas.configure(yscrollcommand=scrollbar.set)
 scrollable_frame = customtkinter.CTkFrame(canvas, fg_color="black")
 canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
 
-def on_frame_configure(event):
+def on_frame_configure():
     canvas.configure(scrollregion=canvas.bbox("all"))
 
-scrollable_frame.bind("<Configure>", on_frame_configure)
+scrollable_frame.bind("<Configure>", lambda event: on_frame_configure())
 
 def on_mousewheel(event):
     canvas.yview_scroll(int(-1*(event.delta/120)), "units")
@@ -44,38 +101,14 @@ def download():
                                         filetypes=[("Csv","*.csv")])
     with open (save,"w",newline="") as file:
         linguaggi = {
-            "Python": "matplotlib",
-            "Python": "tkinter",
-            "Python": "customtkinter",
-            "Python": "keras",
-            "Python": "os",
-            "Python": "tensorflow",
-            "Python": "pytorch",
-            "Python": "numpy",
-            "Python": "scipy",
-            "Python": "cmath",
-            "Python": "sys",
-            "Python": "pandas",
-            "Python": "flask",
-            "Python": "turtle",
-            "Python": "pygame",
-            "Python": "manim",
-            "Python": "requests",
-            "Python": "beautifulsoup4",
-            "Python": "selenium",
-            "Python":"PyQt5",
-            "Python": "Threading",
-            "Python":"Re",
-            "Javascipt":"Three",
-            "Javascript":"React",
-            "Javascript":"Gsap",
-            "Javascript":"Vue"
+            "Python": ["matplotlib", "tkinter", "customtkinter", "keras", "os", "tensorflow", "pytorch", "numpy", "scipy", "cmath", "sys", "pandas", "flask", "turtle", "pygame", "manim", "requests", "beautifulsoup4", "selenium", "PyQt5", "Threading", "Re"],
+            "Javascript": ["Three", "React", "Gsap", "Vue"]
         }
         file_name = csv.writer(file)
-        file_name.writerow(["linguaggi","librerie"])
-        for key,value in linguaggi.items():
-            value_str = str(value)
-            file_name.writerow([key,str(value_str)])
+        file_name.writerow(["Linguaggi", "Librerie"])
+        for key, values in linguaggi.items():
+            for value in values:
+             file_name.writerow([key, value])
     
 frame1 = customtkinter.CTkFrame(scrollable_frame, width=300, height=200, fg_color="black", corner_radius=10)
 frame1.grid(row=0, column=0, padx=50, pady=50)
@@ -139,13 +172,99 @@ frase_label = customtkinter.CTkLabel(scrollable_frame, text="Chat-B è stato fon
 frase_label.grid(row=3, column=0, padx=5, pady=10)
 frase_label2 = customtkinter.CTkLabel(scrollable_frame, text="Software-engineer di Ai e designer" ,text_color="white", font=("Arial", 12))
 frase_label2.grid(row=4, column=0, padx=5, pady=10)
-button = customtkinter.CTkButton(scrollable_frame,text="View Chat-B",text_color="white",fg_color="Black",bg_color="Black")
-button.grid(row=5,column=0,padx=20,pady=10,sticky="se")
+def chat():
+    windownew = customtkinter.CTk()
+    windownew.config(bg="Black")
+    windownew.title("Informazioni Chat-B") 
+    window.columnconfigure(0,weight=1)
+    labelinformazionichatb= customtkinter.CTkLabel(windownew,text="Chat-B",fg_color="Black",bg_color="Black",text_color="White",font=("Arial",32))
+    labelinformazionichatb.pack()
+    datalabel = customtkinter.CTkLabel(windownew,text="08/10/2024-Presente",text_color="White",bg_color="Black",fg_color="Black",font=("Helvetica",12))
+    datalabel.pack(pady=5)
+    descrizionechatb = customtkinter.CTkLabel(
+        windownew,
+        text="Chat-B è un ai conversazionale addestrata su miliardi di dataset. Chat-B si trova in un ottimo punto, possiede un'interfaccia grafica fatta con HTML, CSS, JS e il suo addestramento è a metà, già si vedono i primi risultati. Qualunque domanda gli poni ti risponde con un linguaggio naturale grazie alle mie competenze di NLP. Tuttavia, ancora bisogna sistemare qualcosa per essere più sicuri.",
+        fg_color="Black",
+        text_color="white",
+        bg_color="black",
+        font=("Arial", 16),
+        wraplength=500  
+    )
+    descrizionechatb.pack(padx=10, pady=10)
+    dovesitrovachatb = customtkinter.CTkLabel(windownew,text="Chat-B sara online il 8/08/2027 si spera.",text_color="white",fg_color="black",bg_color="black",font=("Arial",15))
+    dovesitrovachatb.pack(pady=7)
+    def acclinkedin():
+        testolinkedin = "Salvatore Naro"
+        pyperclip.copy(testolinkedin)
+        messagebox.showinfo(title="Successo",message="Il nome dell'account è stato copiato negli appunti")
+    vederechatb  =customtkinter.CTkLabel(windownew,text="Se volete rimanere aggiornati,venite su linkedin",text_color="white",bg_color="Black",fg_color="Black",font=("Arial",15))
+    vederechatb.pack(padx=20,pady=5)
+    buttonlinkedin=customtkinter.CTkButton(windownew,text="View Linkedin",text_color="white",fg_color="Black",bg_color="black",command=acclinkedin)
+    buttonlinkedin.pack(pady=5)
+    windownew.mainloop()
+
+button55 = customtkinter.CTkButton(scrollable_frame,text="View Chat-B",text_color="white",fg_color="Black",bg_color="Black",command=chat)
+button55.grid(row=5,column=0,padx=20,pady=10,sticky="se")
 frase_label3 = customtkinter.CTkLabel(scrollable_frame, text="Rocket-B" ,text_color="white", font=("Arial", 32))
 frase_label3.grid(row=6, column=0, padx=10, pady=10)
 frase_label4 = customtkinter.CTkLabel(scrollable_frame, text="Esplora l'universo con Rocket-B" ,text_color="white", font=("Arial", 15))
 frase_label4.grid(row=7, column=0, padx=5, pady=10)
-button2 = customtkinter.CTkButton(scrollable_frame,text="View Rocket-B",text_color="white",fg_color="Black",bg_color="Black")
+def rocket_b():
+    newindow = customtkinter.CTk()
+    newindow.config(bg="black")
+    newindow.title("Rocket-B Descrizione")
+    testo = "Rocket-B"
+    descrizione = customtkinter.CTkLabel(newindow, text=testo, text_color="White", 
+                                    fg_color="Black", font=("Arial", 32))
+    descrizione.pack()
+
+    label = customtkinter.CTkLabel(newindow, 
+                                text="Rocket-B è un AI che calcola in tempo reale la traiettoria dei razzi grazie al suo addestramento complesso", 
+                                text_color="White", fg_color="Black", 
+                                font=("Arial", 16), wraplength=700)
+    labelinformazioni = customtkinter.CTkLabel(newindow,text="10/03/2025-FINITO",text_color="White",font=("Arial",12),fg_color="Black",bg_color="Black")
+    labelinformazioni.pack(padx=50,pady=5)
+    label.pack(padx=10,pady=10)
+    labelcreatore = customtkinter.CTkLabel(newindow,text="Rocket-B sara reso online il 05/08/2025",text_color="White",fg_color="black",bg_color="Black",font=("Arial",12))
+    labelcreatore.pack(padx=10,pady=5)
+    labelcreatore2 = customtkinter.CTkLabel(newindow,text="al momento  troverete una piccola versione sul mio Github",text_color="White",fg_color="black",bg_color="Black",font=("Arial",12))
+    labelcreatore2.pack(padx=10,pady=5)
+    def github_rocketb():
+        testo = "Salvatore Naro"
+        pyperclip.copy(testo)
+        messagebox.showinfo(title="Successo!",message="Il nome dell'account è stato copiato negli appunti")
+
+    buttongithub = customtkinter.CTkButton(newindow,text="View Github",text_color="White",fg_color="Black",bg_color="Black",command=github_rocketb)
+    buttongithub.pack(padx=100,pady=5)
+    main_frame = customtkinter.CTkFrame(newindow, fg_color="black")
+    main_frame.pack(fill="both", expand=True)
+
+    canvas = Canvas(main_frame, bg="black", highlightthickness=0)
+    canvas.pack(side="left", fill="both", expand=True)
+
+    scrollbar = customtkinter.CTkScrollbar(main_frame, orientation="vertical", command=canvas.yview)
+    scrollbar.pack(side="right", fill="y")
+
+    canvas.configure(yscrollcommand=scrollbar.set)
+    scrollable_frame = customtkinter.CTkFrame(canvas, fg_color="black")
+    canvas.create_window((0, 0), window=scrollable_frame, anchor="nw")
+
+    def on_frame_configure():
+        canvas.configure(scrollregion=canvas.bbox("all"))
+
+    scrollable_frame.bind("<Configure>", lambda event: on_frame_configure())
+
+    def on_mousewheel(event):
+        canvas.yview_scroll(int(-1*(event.delta/120)), "units")
+
+    canvas.bind_all("<MouseWheel>", on_mousewheel)
+    
+
+    
+    newindow.mainloop()
+
+
+button2 = customtkinter.CTkButton(scrollable_frame,text="View Rocket-B",text_color="white",fg_color="Black",bg_color="Black",command=rocket_b)
 button2.grid(row=8,column=0,padx=20,pady=10,sticky="se")
 gif_path2 = "C:\\Users\\salva\\Downloads\\sam.gif"
 try:
@@ -244,9 +363,7 @@ def animate_text3():
     label14.configure(text=parola[:indice])
     window.after(100,animate_text3)
 animate_text3()
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+
 
 def verifica():
     nome = input_utente.get()
@@ -255,12 +372,13 @@ def verifica():
 
     if nome == "" or cognome == "" or messaggio_testo == "":
         messagebox.showinfo(title="Errore 404", message="Compilare tutti i campi")
+        logging.warning("Compilare i camppi")
         return
 
     
     sender_email = "yourgmail@gmail.com"#your gmail  
-    sender_password = "Your password"#ypur passowrd 
-    recipient_email = "narosalvo8@gmail.com"  
+    sender_password = "Your Password"#ypur passowrd 
+    recipient_email = "narosalvo8@gmail.com" 
 
     subject = f"Messaggio da {nome} {cognome}"
     body = f"Nome: {nome}\nCognome: {cognome}\n\nMessaggio:\n{messaggio_testo}"
@@ -557,7 +675,48 @@ lavori = {
     "Wireless Network Specialist",
     "Workflow Developer",
     "XaaS Developer",
-    "Zero Trust Security Specialist"
+    "Zero Trust Security Specialist",
+    "AI Product Manager",
+    "Data Privacy Officer",
+    "Digital Twin Specialist",
+    "Edge Computing Specialist",
+    "IoT Security Specialist",
+    "Machine Learning Product Manager",
+    "Robotics Data Scientist",
+    "SaaS Product Manager",
+    "Smart Home Developer",
+    "Software Quality Analyst",
+    "UX Researcher",
+    "Video Game Producer",
+    "Web3 Developer",
+    "AI Policy Analyst",
+    "Blockchain Security Engineer",
+    "Cloud Cost Optimization Specialist",
+    "Cyber Threat Intelligence Analyst",
+    "Data Ethics Specialist",
+    "Digital Accessibility Specialist",
+    "E-Sports Developer",
+    "Energy Efficiency Analyst",
+    "Green IT Specialist",
+    "Human-Robot Interaction Designer",
+    "IT Compliance Manager",
+    "Knowledge Graph Engineer",
+    "Low-Code Developer",
+    "Metaverse Developer",
+    "Mobile UX Designer",
+    "Natural Language Understanding Engineer",
+    "Open Source Software Advocate",
+    "Privacy Engineer",
+    "Quantum Cryptography Researcher",
+    "Renewable Energy Data Engineer",
+    "Robotic Process Automation Developer",
+    "SaaS Operations Manager",
+    "Sustainable IT Consultant",
+    "Synthetic Data Engineer",
+    "Telehealth Developer",
+    "Urban Data Scientist",
+    "Wearable Technology Developer",
+    "Zero Emission Software Engineer"
 }
 x = customtkinter.StringVar(value="altro")
 scelta_utente = customtkinter.CTkOptionMenu(frame6,variable=x,values=[str(i)for i in lavori],fg_color="black",bg_color="black",text_color="white")
@@ -627,8 +786,16 @@ def open_about_window():
     labelgmail = customtkinter.CTkLabel(frame_app,text="narosalvo8@gmail.com",text_color="White",fg_color="Black",bg_color="Black",font=("Arial",12))
     labelgmail.grid(row=3,pady=10,padx=20,column=3)
 
-    
-    
-
-
 window.mainloop()
+
+
+
+
+
+
+
+
+
+
+
+
